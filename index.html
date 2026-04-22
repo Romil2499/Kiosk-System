@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICCT Mozu Kiosk</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #e4e9f0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .kiosk-container { background-color: white; width: 100%; max-width: 800px; height: 85vh; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; }
+        .header { background-color: #004792; color: white; padding: 20px; display: flex; align-items: center; gap: 15px; }
+        .avatar { font-size: 50px; }
+        .title-text { font-size: 28px; font-weight: bold; }
+        .subtitle-text { font-size: 16px; opacity: 0.8; }
+        
+        .chat-area { flex: 1; padding: 30px; background-color: #f8f9fa; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+        
+        .bubble-bot { background-color: #ffffff; padding: 20px 25px; border-radius: 20px; border-bottom-left-radius: 5px; max-width: 85%; font-size: 22px; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.05); align-self: flex-start; animation: popIn 0.3s ease-out; }
+        .bubble-user { background-color: #004792; color: white; padding: 20px 25px; border-radius: 20px; border-bottom-right-radius: 5px; max-width: 85%; font-size: 22px; align-self: flex-end; box-shadow: 0 2px 5px rgba(0,0,0,0.1); animation: popIn 0.3s ease-out; }
+        
+        @keyframes popIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+        
+        .button-area { padding: 30px; background-color: white; border-top: 2px solid #eee; display: flex; flex-direction: column; gap: 15px; }
+        .btn { background-color: #004792; color: white; border: none; padding: 20px; font-size: 22px; font-weight: bold; border-radius: 15px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: left; }
+        .btn:active { background-color: #003366; transform: scale(0.98); }
+        .btn-yellow { background-color: #ffc107; color: #212529; text-align: center; font-size: 26px; padding: 25px; }
+        .btn-yellow:active { background-color: #e0a800; }
+    </style>
+</head>
+<body>
+
+    <div class="kiosk-container">
+        <div class="header">
+            <div class="avatar">🤖</div>
+            <div>
+                <div class="title-text">Mozu</div>
+                <div class="subtitle-text">ICCT Smart Information & Ticketing Kiosk</div>
+            </div>
+        </div>
+
+        <div class="chat-area" id="chat-box">
+            <div class="bubble-bot">
+                <strong>Mozu:</strong><br>
+                Hi there! 👋 Welcome to ICCT Colleges. Please tap a button below to let me know what you need today.
+            </div>
+        </div>
+
+        <div class="button-area" id="button-box">
+            <button class="btn" onclick="startInformationFlow()">ℹ️ I need Information (FAQs)</button>
+            <button class="btn btn-yellow" onclick="startTicketFlow()">🎟️ I need a Queue Ticket</button>
+        </div>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const buttonBox = document.getElementById('button-box');
+
+        function addUserBubble(text) {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble-user';
+            bubble.innerHTML = text;
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight; 
+        }
+
+        function addBotBubble(text) {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble-bot';
+            bubble.innerHTML = `<strong>Mozu:</strong><br>${text}`;
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showMainMenu() {
+            buttonBox.innerHTML = `
+                <button class="btn" onclick="startInformationFlow()">ℹ️ I need Information (FAQs)</button>
+                <button class="btn btn-yellow" onclick="startTicketFlow()">🎟️ I need a Queue Ticket</button>
+            `;
+        }
+
+        async function startInformationFlow() {
+            addUserBubble("I need Information.");
+            buttonBox.innerHTML = '';
+            
+            setTimeout(async () => {
+                addBotBubble("What would you like to know about? Tap a topic below.");
+                const response = await fetch('/api/faqs');
+                const faqs = await response.json();
+                
+                faqs.forEach(faq => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn';
+                    btn.innerHTML = `📌 ${faq.category}`;
+                    btn.onclick = () => {
+                        addUserBubble(faq.question);
+                        setTimeout(() => addBotBubble(faq.answer), 400);
+                    };
+                    buttonBox.appendChild(btn);
+                });
+                
+                const backBtn = document.createElement('button');
+                backBtn.className = 'btn btn-yellow';
+                backBtn.innerHTML = '⬅️ Back to Main Menu';
+                backBtn.onclick = () => { addUserBubble("Back to main menu."); setTimeout(showMainMenu, 300); };
+                buttonBox.appendChild(backBtn);
+            }, 500); 
+        }
+
+        function startTicketFlow() {
+            addUserBubble("I need a Queue Ticket.");
+            buttonBox.innerHTML = '';
+            
+            setTimeout(() => {
+                addBotBubble("Great! Which office are you visiting today?");
+                
+                buttonBox.innerHTML = `
+                    <button class="btn" onclick="askStudentID('Registrar')">🏢 Registrar's Office</button>
+                    <button class="btn" onclick="askStudentID('Cashier')">💰 Cashier</button>
+                    <button class="btn btn-yellow" onclick="showMainMenu()">⬅️ Cancel</button>
+                `;
+            }, 500);
+        }
+
+        function askStudentID(department) {
+    addUserBubble(`I am going to the ${department}.`);
+    buttonBox.innerHTML = '';
+    
+    setTimeout(() => {
+        addBotBubble("Got it! Please enter your Student ID Number below:");
+        
+        buttonBox.innerHTML = `
+            <div style="color: #004792; font-weight: bold; margin-bottom: 10px; font-size: 20px; text-align: center;">
+                👇 Tap the box below to type your ID
+            </div>
+            <input type="text" id="student-id-input" placeholder="Tap here to enter ID (e.g. 2024-12345)" 
+                   style="padding: 20px; font-size: 24px; border-radius: 10px; border: 3px solid #004792; margin-bottom: 15px; width: 100%; text-align: center; background-color: #f8f9fa;">
+            <button class="btn btn-yellow" onclick="submitTicket('${department}')">✅ Generate Ticket</button>
+            <button class="btn" onclick="showMainMenu()">⬅️ Cancel</button>
+        `;
+    }, 500);
+}
+
+        async function submitTicket(department) {
+            const studentId = document.getElementById('student-id-input').value;
+            
+            if (studentId.trim() === "") {
+                alert("Please enter a valid Student ID!");
+                return;
+            }
+
+            addUserBubble(`My ID is ${studentId}.`);
+            buttonBox.innerHTML = '';
+            addBotBubble("Processing your ticket... 🖨️");
+
+            const response = await fetch('/api/ticket', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_number: studentId, department: department })
+            });
+            
+            const ticketData = await response.json();
+
+            setTimeout(() => {
+                addBotBubble(`
+                    <div style="background: #fff; padding: 20px; border: 2px dashed #333; text-align: center; margin-top: 10px;">
+                        <h3 style="margin-bottom:10px;">ICCT COLLEGES</h3>
+                        <h2>${ticketData.department}</h2>
+                        <h1 style="font-size: 40px; color: #004792;">Ticket #${ticketData.queue_number}</h1>
+                        <p style="color: #666; font-size: 14px;">Please wait for your number to be called.</p>
+                    </div>
+                    <br>Please take your ticket from the printer below!
+                `);
+                
+                buttonBox.innerHTML = `<button class="btn btn-yellow" onclick="showMainMenu()">✅ Done</button>`;
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashier Dashboard</title>
+    <style>
+        /* Senior-Friendly CSS */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .dashboard-card {
+            background-color: white;
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 80%;
+            max-width: 600px;
+        }
+        .title {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .ticket-number {
+            font-size: 120px;
+            font-weight: bold;
+            color: #004792;
+            margin: 20px 0;
+            line-height: 1;
+        }
+        .waiting-text {
+            font-size: 24px;
+            color: #666;
+            margin-bottom: 40px;
+        }
+        /* Massive Action Button */
+        .btn-call {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 30px;
+            font-size: 36px;
+            font-weight: bold;
+            border-radius: 15px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .btn-call:active {
+            background-color: #218838;
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-card">
+        <div class="title">Now Serving</div>
+        
+        <div class="ticket-number">#{{ current }}</div>
+        
+        <div class="waiting-text">People waiting in line: <strong>{{ waiting }}</strong></div>
+        
+        <button class="btn-call" onclick="alert('Ticket called! The TV in the hallway just dinged.')">
+            📢 CALL NEXT TICKET
+        </button>
+    </div>
+
+</body>
+</html>
